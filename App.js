@@ -5,7 +5,8 @@ import {
   View, 
   ActivityIndicator,
   FlatList,
-  Linking
+  Linking,
+  TextInput
 } from 'react-native';
 
 import moment from 'moment';
@@ -13,7 +14,9 @@ import { Card, Button, Icon } from 'react-native-elements';
 
 export default function App() {
   const [loading, setLoading] = useState( true );
+  const [text, setText] = useState('');
   const [articles, setArticles] = useState([]);
+  const [filt, setFilt] = useState([]);
   const [pageNumber, setPageNumber] = useState( 1 );
   const [hasErrored, setHasApiError] = useState( false );
   const [lastPageReached, setLastPageReached] = useState( false );
@@ -42,6 +45,7 @@ export default function App() {
       if ( hasMoreArticles ) {
         const newArticleList = filterForUniqueArticles( articles.concat ( jsonData.articles ));
         setArticles( newArticleList );
+        setFilt( newArticleList );
         setPageNumber(pageNumber + 1);
       } else {
         setLastPageReached(true);
@@ -50,6 +54,16 @@ export default function App() {
       setHasApiError( true );
     }
     setLoading( false );
+  };
+
+  const SearchFilterFunction = (text) => {
+    const newArticles = filt.filter((item) => {
+      const itemData = item.title ? item.title.toUpperCase() : ''.toUpperCase();
+      const textData = text.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setArticles(newArticles);
+    setText(text);
   };
 
   const renderItem = ( {item} ) => {
@@ -102,6 +116,13 @@ export default function App() {
 
   return(
     <View style={styles.container}>
+      <TextInput
+          style={styles.textInputStyle}
+          onChangeText={text => SearchFilterFunction(text)}
+          underlineColorAndroid="transparent"
+          placeholder="Search Here"
+          value={text}
+        />
       <View style={styles.row}>
         <Text style={styles.label}>Articles Count:</Text>
         <Text style={styles.info}>{articles.length}</Text>
@@ -148,5 +169,13 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 16,
     color: 'grey'
-  }
+  },
+  textInputStyle: {
+    height: 40,
+    width: '90%',
+    borderWidth: 1,
+    paddingLeft: 10,
+    borderColor: '#009688',
+    backgroundColor: '#FFFFFF',
+  },
 });
